@@ -1,21 +1,15 @@
-# Exas
+# AI assistant that works in Telegram. Built with Elixir
 
-**TODO: Add description**
+## Local launch
+1. create a `.env` file with vars from `lib/env-config.ex` file
+2. run `mix dev`, and enjoy✨
 
-## Installation
+## Features
+- voice understanding
+- cleaning context with `/new` command
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `exas` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:exas, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/exas>.
-
+## Todo
+- handle `/start` command
+- add tools for task management
+- image understanding
+- more test coverage
