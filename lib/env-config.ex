@@ -1,7 +1,14 @@
 defmodule EnvConfig do
   def init do
-    :ok = DotenvParser.load_file(".env")
-    :ok
+    case get!("MIX_ENV") do
+      "dev" ->
+        :ok = DotenvParser.load_file(".env")
+        :ok
+
+      "prod" ->
+        :ok = DotenvParser.load_file(".env.prod")
+        :ok
+    end
   end
 
   @spec get!(String.t()) :: String.t()

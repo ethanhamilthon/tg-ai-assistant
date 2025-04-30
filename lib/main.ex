@@ -1,14 +1,5 @@
 defmodule Exas do
   alias Exas.AiWrapper
-  import EnvConfig
-
-  def main(_args) do
-    init()
-    db = Exas.Sql.connect(get_db_path())
-    Exas.Sql.migrate(db)
-    Exas.Sql.create_default_info(db, get_chat_id(), "first")
-    start(db)
-  end
 
   def start(db) do
     loop(0, db)
@@ -51,7 +42,7 @@ defmodule Exas do
           case text do
             "/new" ->
               Telegex.send_message(chat_id, "history cleaned")
-              Exas.Sql.create_info(db, get_chat_id(), Nanoid.generate(10))
+              Exas.Sql.create_info(db, EnvConfig.get_chat_id(), Nanoid.generate(10))
 
             msg ->
               {:ok, _, c} = Exas.AiWrapper.handle_chat(history ++ [%{role: "user", content: msg}])

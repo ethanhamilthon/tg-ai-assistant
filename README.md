@@ -1,5 +1,7 @@
 # AI assistant that works in Telegram. Built with Elixir
 
+Built this project to just try out Elixir language.
+
 ## Local launch
 1. create a `.env` file with vars from `lib/env-config.ex` file
 2. run `mix dev`, and enjoy✨

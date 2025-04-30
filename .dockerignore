@@ -22,9 +22,6 @@ exas-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
-# env file for secrets. open lib/env-config.ex to see required env vars
-.env
-.env.*
 
 # local sqlite db
 data.db

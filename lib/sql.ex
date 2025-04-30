@@ -9,8 +9,13 @@ defmodule Exas.Sql do
 
   @spec connect(binary()) :: Exqlite.Sqlite3.db()
   def connect(path) do
-    {:ok, conn} = Exqlite.Sqlite3.open(path)
-    conn
+    case Exqlite.Sqlite3.open(path) do
+      {:ok, db} ->
+        db
+
+      {:error, r} ->
+        raise r
+    end
   end
 
   def migrate(db) do

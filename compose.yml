@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    volumes:
+      - exasdata:/app/data/
+    container_name: exas_bot
+    restart: unless-stopped
+
+volumes:
+  exasdata:
