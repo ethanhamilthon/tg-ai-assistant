@@ -1,10 +1,17 @@
 defmodule Exas.Sql do
   defmodule Message do
+    @derive Jason.Encoder
     defstruct [:id, :content, :role, :chat]
   end
 
   defmodule Info do
+    @derive Jason.Encoder
     defstruct [:id, :current_chat, :created_at]
+  end
+
+  defmodule UserTask do
+    @derive Jason.Encoder
+    defstruct [:id, :title, :description]
   end
 
   @spec connect(binary()) :: Exqlite.Sqlite3.db()
@@ -34,6 +41,12 @@ defmodule Exas.Sql do
           id text not null,
           current_chat text not null,
           created_at text not null
+        );
+
+        create table if not exists tasks (
+          id text not null,
+          title text not null,
+          description text not null
         )
         """
       )
@@ -83,6 +96,51 @@ defmodule Exas.Sql do
     :ok = Exqlite.Sqlite3.release(db, stt)
   end
 
+  def create_task(db, id, title, desc) do
+    {:ok, stt} =
+      Exqlite.Sqlite3.prepare(
+        db,
+        """
+        INSERT INTO tasks (id, title, description) VALUES (?,?,?)
+        """
+      )
+
+    :ok = Exqlite.Sqlite3.bind(stt, [id, title, desc])
+    :done = Exqlite.Sqlite3.step(db, stt)
+    :ok = Exqlite.Sqlite3.release(db, stt)
+  end
+
+  def update_task(db, id, title, desc) do
+    {:ok, stt} =
+      Exqlite.Sqlite3.prepare(
+        db,
+        """
+        UPDATE tasks
+        SET title = ?, description = ?
+        WHERE id = ?;
+        """
+      )
+
+    :ok = Exqlite.Sqlite3.bind(stt, [title, desc, id])
+    :done = Exqlite.Sqlite3.step(db, stt)
+    :ok = Exqlite.Sqlite3.release(db, stt)
+  end
+
+  def delete_task(db, id) do
+    {:ok, stt} =
+      Exqlite.Sqlite3.prepare(
+        db,
+        """
+        DELETE FROM tasks
+        WHERE id = ?;
+        """
+      )
+
+    :ok = Exqlite.Sqlite3.bind(stt, [id])
+    :done = Exqlite.Sqlite3.step(db, stt)
+    :ok = Exqlite.Sqlite3.release(db, stt)
+  end
+
   def get_current_info(db) do
     {:ok, stt} =
       Exqlite.Sqlite3.prepare(
@@ -125,6 +183,19 @@ defmodule Exas.Sql do
         content: content,
         role: role,
         chat: chat
+      }
+    end)
+  end
+
+  def list_tasks(db) do
+    {:ok, stmt} = Exqlite.Sqlite3.prepare(db, "SELECT * FROM tasks")
+
+    fetch_all_rows(db, stmt)
+    |> Enum.map(fn [id, title, description] ->
+      %UserTask{
+        id: id,
+        title: title,
+        description: description
       }
     end)
   end

@@ -1,29 +1,30 @@
 defmodule Exas do
   alias Exas.AiWrapper
 
-  def start(db) do
-    loop(0, db)
+  def start() do
+    loop(0)
   end
 
-  defp loop(offset, db) do
+  defp loop(offset) do
     case Telegex.get_updates(offset: offset) do
       {:ok, updates} ->
         new_offset =
           Enum.reduce(updates, offset, fn update, acc_offset ->
-            handle_update(update, db)
+            handle_update(update)
             max(update.update_id + 1, acc_offset)
           end)
 
-        loop(new_offset, db)
+        loop(new_offset)
 
       {:error, _} ->
         nil
         :timer.sleep(1000)
-        loop(offset, db)
+        loop(offset)
     end
   end
 
-  defp handle_update(update, db) do
+  defp handle_update(update) do
+    db = Exas.DbServer.get_conn()
     message = update.message
     %{chat: %{id: chat_id}} = message
     %{current_chat: chat, id: id} = Exas.Sql.get_current_info(db)
@@ -45,7 +46,9 @@ defmodule Exas do
               Exas.Sql.create_info(db, EnvConfig.get_chat_id(), Nanoid.generate(10))
 
             msg ->
-              {:ok, _, c} = Exas.AiWrapper.handle_chat(history ++ [%{role: "user", content: msg}])
+              {:ok, _, c} =
+                Exas.AiWrapper.handle_chat(history ++ [%{role: "user", content: msg}])
+
               Telegex.send_message(chat_id, c)
 
               Exas.Sql.create_msg(db, msg, "user", chat)
@@ -55,7 +58,9 @@ defmodule Exas do
         {_, %Telegex.Type.Voice{} = voice} ->
           {:ok, text, ogg_path, mp3_path} = handle_voice(voice.file_id)
 
-          {:ok, _, c} = Exas.AiWrapper.handle_chat(history ++ [%{role: "user", content: text}])
+          {:ok, _, c} =
+            Exas.AiWrapper.handle_chat(history ++ [%{role: "user", content: text}])
+
           Telegex.send_message(chat_id, c)
 
           Exas.Sql.create_msg(db, text, "user", chat)

@@ -10,7 +10,7 @@ defmodule ExasTest do
     create_msg(conn, "hello", "user", "first")
     create_msg(conn, "hellod", "assistant", "first")
     create_msg(conn, "hellod", "assistant", "dd")
-    msgs = list_msg(conn, "firstd")
+    msgs = list_msg(conn, "first")
     IO.inspect(msgs)
     assert length(msgs) == 2
   end
@@ -32,5 +32,29 @@ defmodule ExasTest do
     infos = list_infos(conn)
     infos |> IO.inspect()
     assert length(infos) === 2
+  end
+
+  test "task database test" do
+    conn = connect(":memory:")
+    migrate(conn)
+
+    create_task(conn, Nanoid.generate(16), "first task", "desc")
+    tasks = list_tasks(conn)
+
+    assert length(tasks) == 1
+    assert Enum.at(tasks, 0).title == "first task"
+
+    update_task(conn, Enum.at(tasks, 0).id, "updated task", "desc")
+    tasks = list_tasks(conn)
+
+    assert length(tasks) == 1
+    assert Enum.at(tasks, 0).title == "updated task"
+
+    Enum.at(tasks, 0) |> IO.inspect()
+
+    delete_task(conn, Enum.at(tasks, 0).id)
+    tasks = list_tasks(conn)
+
+    assert length(tasks) == 0
   end
 end

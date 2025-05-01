@@ -11,9 +11,9 @@ defmodule Exas.AiWrapper do
     history = [%{role: "developer", content: @system}] ++ history
 
     history
-    |> Enum.map(fn %{role: role, content: c} -> "#{role}: #{c}" end)
-    |> Enum.join("\n")
-    |> IO.puts()
+    |> Enum.each(fn f ->
+      f |> IO.inspect()
+    end)
 
     "--- History end" |> IO.puts()
 
@@ -22,7 +22,7 @@ defmodule Exas.AiWrapper do
         model: get_openai_model(),
         messages: history,
         n: 1,
-        tools: get_tool_defs()
+        tools: Exas.Tools.get_full_definitions()
       ],
       %OpenAI.Config{
         api_key: get_openai_token()
@@ -58,19 +58,9 @@ defmodule Exas.AiWrapper do
 
   def call_fn(call) do
     id = call["id"]
-    # name = call["function"]["name"]
-
-    output =
-      case Jason.decode(call["function"]["arguments"]) do
-        {:error, r} ->
-          IO.puts(r.data)
-          "some error"
-
-        {:ok, map} ->
-          # fake fn call
-          map["location"] <> " is sunny"
-      end
-
+    name = call["function"]["name"]
+    args = call["function"]["arguments"]
+    output = Exas.Tools.call_functions(name, args)
     %{role: "tool", tool_call_id: id, content: output}
   end
 
